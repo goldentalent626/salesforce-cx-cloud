@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="robots" content="noindex" />
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title></title>
+    <meta name="Template" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://sdk-cdn.mypurecloud.com/javascript/latest/purecloud-platform-client-v2.min.js"></script>
+  </head>
+
+  <body onload="start()">
+    <audio style="display: none" id="audioPlayer" src="" controls></audio>
+    <script>
+      'use strict' //Enables strict mode is JavaScript
+      let url = new URL(document.location.href)
+      let gc_region = url.searchParams.get('gc_region')
+      let gc_clientId = url.searchParams.get('gc_clientId')
+      let gc_redirectUrl = url.searchParams.get('gc_redirectUrl')
+      let gc_conversationId = url.searchParams.get('gc_conversationId')
+
+      //Getting and setting the GC details from dynamic URL and session storage
+      gc_region ? sessionStorage.setItem('gc_region', gc_region) : (gc_region = sessionStorage.getItem('gc_region'))
+      gc_clientId ? sessionStorage.setItem('gc_clientId', gc_clientId) : (gc_clientId = sessionStorage.getItem('gc_clientId'))
+      gc_redirectUrl ? sessionStorage.setItem('gc_redirectUrl', gc_redirectUrl) : (gc_redirectUrl = sessionStorage.getItem('gc_redirectUrl'))
+      gc_conversationId ? sessionStorage.setItem('gc_conversationId', gc_conversationId) : (gc_conversationId = sessionStorage.getItem('gc_conversationId'))
+
+      let platformClient = require('platformClient')
+      const client = platformClient.ApiClient.instance
+      const capi = new platformClient.ConversationsApi()
+      const vapi = new platformClient.VoicemailApi()
+
+      async function start() {
+        try {
+          client.setEnvironment(gc_region)
+          client.setPersistSettings(true, '_mm_')
+
+          console.log('%cLogging in to Genesys Cloud', 'color: green')
+          await client.loginPKCEGrant(gc_clientId, gc_redirectUrl, {})
+          //Enter in starting code.
+          if (gc_conversationId) {
+            const messageId = await getCurrent(gc_conversationId)
+            const url = await vapi.getVoicemailMessageMedia(messageId, {})
+            console.log(url)
+            if (url) {
+              document.getElementById('audioPlayer').src = url.mediaFileUri
+              document.getElementById('audioPlayer').style.display = 'block'
+            }
+          }
+        } catch (err) {
+          console.log('Error: ', err)
+        }
+      } //End of start() function
+
+      async function getCurrent(conversationId) {
+        console.log(conversationId)
+        const conversation = await capi.getAnalyticsConversationDetails(conversationId)
+        const voiceMail = conversation.participants.reverse().find((p) => p.purpose === 'voicemail')
+        const ivr = conversation.participants.reverse().find((p) => p.purpose === 'ivr')
+        const vmailQueue = voiceMail.participantName
+        const transferType = ivr.sessions[0].flow.transferType
+
+        if (transferType === 'ACD_VOICEMAIL') {
+          const messages = await vapi.getVoicemailQueueMessages(vmailQueue, { pageSize: 200, pageNumber: 1 })
+          for (const conv of messages.entities) {
+            if (conv.conversation.id === conversationId) {
+              return conv.id
+            }
+          }
+        }
+        return undefined
+      }
+    </script>
+  </body>
+</html>
