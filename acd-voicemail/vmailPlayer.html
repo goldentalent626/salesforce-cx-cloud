@@ -56,8 +56,9 @@
       async function getCurrent(conversationId) {
         console.log(conversationId)
         const conversation = await capi.getAnalyticsConversationDetails(conversationId)
-        const voiceMail = conversation.participants.reverse().find((p) => p.purpose === 'voicemail')
-        const ivr = conversation.participants.reverse().find((p) => p.purpose === 'ivr')
+        const reversedParticipants = conversation.participants.reverse()
+        const voiceMail = reversedParticipants.find((p) => p.purpose === 'voicemail')
+        const ivr = reversedParticipants.find((p) => p.purpose === 'ivr')
         const vmailQueue = voiceMail.participantName
         const transferType = ivr.sessions[0].flow.transferType
 
