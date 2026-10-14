@@ -18,8 +18,6 @@ In this example you will find a folder `src` that has 4 files in it
 
 The `index.html` file is separate and needs to be hosted on a cloud web server to provide the HTML page for the OAuth redirect. In my case I put mine on a simple GCP Bucket but you could also use a AWS S3 Bucket if you prefer or really any hosting option. As this HTML file does NOT include any of the authentication information itself and uses 'postMessage' to communicate there is no need to create separate ones for difference ORGs as well as you can have this publicly accessible. Of course look at the code and make your own call on that for security.
 
-The other 3x files are the Salesforce lightening component that will render the buttons required for these use cases. Right now these use cases include [Secure Flow](https://help.mypurecloud.com/articles/secure-flows/) and [conference terms](https://github.com/mcphee11/conference-terms-conditions) as native buttons inside of salesforce
-
 ![](docs/images/component.png?raw=true)
 
 ## OAuth
