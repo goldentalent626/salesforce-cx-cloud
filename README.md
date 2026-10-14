@@ -48,7 +48,7 @@ copy this down as you will need it later.
 
 ## Conference Flow
 
-Create and get the FlowId similar to the secure flow. For details on the use case for the conference flow and how to build it you can see more details [here](https://github.com/mcphee11/conference-terms-conditions)
+Create and get the FlowId similar to the secure flow. For details on the use case for the conference flow and how to build it you can see more details
 
 ## Workflow (used for Copilot summary saving)
 
